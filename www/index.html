@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+ <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <title>Ronda - Smart Assistant</title>
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0a0a0a">
+  <style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;font-family:system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;touch-action:manipulation;background:transparent !important}
+:root{
+--bg-main:transparent;--text-main:#fff;--btn-bg:rgba(41,41,41,.85);--btn-border:rgba(59,59,59,.85);
+--info-bg:rgba(24,24,24,.85);--info-text:#999;--info-b-text:#fff;
+--footer-undo:rgba(38,38,38,.85);--footer-reset-bg:rgba(222,222,222,.9);--footer-reset-color:#111;
+--total-cell-bg:rgba(5,5,5,.7);--total-cell-border:rgba(34,34,34,.85);
+--empty-cell-bg:rgba(17,17,17,.5);--empty-cell-border:rgba(34,34,34,.85);
+--rem-bg:rgba(11,11,11,.85);--rem-color:#fff;--ring-bg:#222;--ring-progress:#ffd700;
+}
+body.light-mode{
+--bg-main:transparent;--text-main:#111;--btn-bg:rgba(255,255,255,.85);--btn-border:rgba(203,213,225,.9);
+--info-bg:rgba(255,255,255,.85);--info-text:#555;--info-b-text:#000;
+--footer-undo:rgba(226,232,240,.9);--footer-reset-bg:rgba(30,41,59,.9);--footer-reset-color:#fff;
+--total-cell-bg:rgba(255,255,255,.8);--total-cell-border:rgba(203,213,225,.9);
+--empty-cell-bg:rgba(223,228,234,.7);--empty-cell-border:rgba(203,213,225,.9);
+--rem-bg:rgba(203,213,225,.9);--rem-color:#111;--ring-bg:#e2e8f0;--ring-progress:#d4a017;
+}
+html,body{background:transparent;color:var(--text-main)}
+.app{width:100%;height:100%;padding:1vh 1.5vw;display:flex;flex-direction:column;gap:1vh;position:relative;transition:opacity .2s}
+.header{height:6vh;min-height:38px;display:flex;align-items:center;padding:0 2px;gap:6px}
+.btn-group{display:flex;gap:1vw;width:100%;height:100%}
+.top-action-btn{border-radius:10px;font-size:2.2vh;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:1;height:100%}
+.ai-mind-btn{background:rgba(51,17,34,.9);border:1px solid #993366;color:#ff66b2}
+body.light-mode .ai-mind-btn{background:rgba(253,242,248,.9);border-color:#f472b6;color:#db2777}
+.ai-mind-btn.mode-floor{background:rgba(13,148,136,.9);border-color:#00bfa5;color:#fff;animation:pulseTeal 1.2s infinite}
+.ai-mind-btn.mode-hand{background:rgba(124,58,237,.9);border-color:#a78bfa;color:#fff;animation:pulsePurple 1.2s infinite}
+@keyframes pulseTeal{0%,100%{box-shadow:0 0 0 0 rgba(13,148,136,.7)}50%{box-shadow:0 0 0 8px rgba(13,148,136,0)}}
+@keyframes pulsePurple{0%,100%{box-shadow:0 0 0 0 rgba(124,58,237,.7)}50%{box-shadow:0 0 0 8px rgba(124,58,237,0)}}
+.focus-btn{background:rgba(17,51,34,.9);border:1px solid #228844;color:#00e676}
+body.light-mode .focus-btn{background:rgba(240,253,244,.9);border-color:#4ade80;color:#16a34a}
+.focus-btn.active{background:#00e676;color:#000;border-color:#69f0ae;box-shadow:0 0 6px rgba(0,230,118,.6)}
+body.light-mode .focus-btn.active{background:#22c55e;color:#fff;border-color:#16a34a}
+.theme-btn{background:rgba(42,27,61,.9);border:1px solid #6b359c;color:#d8b4fe}
+body.light-mode .theme-btn{background:rgba(243,232,255,.9);border-color:#c084fc;color:#7e22ce}
+.opacity-panel{display:none;background:rgba(24,24,24,.9);border:1px solid var(--btn-border);border-radius:8px;padding:1vh 2vw;align-items:center;gap:2vw}
+.opacity-panel.active{display:flex}
+.opacity-panel label{font-size:1.6vh;font-weight:900;color:#ffd700;white-space:nowrap}
+.opacity-panel input[type="range"]{flex:1;height:2vh;accent-color:#ffd700}
+.opacity-panel .value{font-size:1.6vh;font-weight:900;color:#fff;min-width:5vw;text-align:center}
+.dropped-bar{min-height:5vh;max-height:7vh;background:var(--info-bg);border:1px solid var(--btn-border);border-radius:8px;display:flex;align-items:center;padding:0.5vh 1vw;gap:1vw;overflow-x:auto;flex-wrap:nowrap;cursor:pointer}
+.dropped-bar::-webkit-scrollbar{height:2px}
+.pin-icon{font-size:1.4vh;opacity:.7}
+.dropped-chip{background:var(--btn-bg);border:1px solid var(--btn-border);padding:0.6vh 1.2vw;border-radius:8px;font-weight:900;font-size:2vh;color:var(--info-b-text);display:inline-flex;align-items:center;gap:3px;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.dropped-chip.latest-dropped{background:rgba(58,44,0,.9)!important;border:2px solid #ffd700!important;color:#ffd700!important;font-size:1.9vh!important;padding:0.5vh 1.5vw!important;box-shadow:0 0 10px rgba(255,215,0,.7)}
+body.light-mode .dropped-chip.latest-dropped{background:rgba(255,251,230,.95)!important;border-color:#d4a017!important;color:#8a6300!important;box-shadow:0 0 10px rgba(212,160,23,.5)}
+.grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(3,1fr);gap:0.6vh}
+.cell{position:relative;min-width:0;min-height:0}
+.cell.total-slot{grid-column:4;grid-row:3}
+.cell.empty-slot{grid-column:3;grid-row:3}
+button.num,button.action{width:100%;height:100%;border:0;border-radius:8px;background:var(--btn-bg);color:var(--text-main);font-weight:900}
+button.num{font-size:5vh;font-weight:900;letter-spacing:-1px;border:1px solid var(--btn-border);position:relative;transition:background .2s;box-shadow:0 2px 4px rgba(0,0,0,.05)}
+@keyframes dangerPulse{
+0%{border-color:#e63b3b;box-shadow:inset 0 0 0 #e63b3b;background:rgba(58,21,21,.9);color:#fff}
+50%{border-color:#ff4d4d;box-shadow:inset 0 0 10px #e63b3b;background:rgba(82,29,29,.9);color:#fff}
+100%{border-color:#e63b3b;box-shadow:inset 0 0 0 #e63b3b;background:rgba(58,21,21,.9);color:#fff}
+}
+button.danger-pulse{animation:dangerPulse 1.2s infinite;background:rgba(58,21,21,.9)!important;color:#fff!important}
+body.light-mode button.danger-pulse{background:rgba(254,226,226,.9)!important;color:#b91c1c!important}
+button.num:active,button.action:active{transform:scale(.94)}
+.rem{position:absolute;bottom:0.5vh;left:0.5vw;min-width:2.5vh;height:2.5vh;padding:0 0.5vw;border-radius:6px;background:var(--rem-bg);color:var(--rem-color);font-size:1.3vh;font-weight:bold;line-height:2.5vh;text-align:center;pointer-events:none;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.c3 .rem{background:#2ecc55;color:#0a2410}
+body.light-mode .c3 .rem{background:#dcfce7;color:#166534}
+.c2 button.num{background:rgba(81,65,22,.9)!important;border-color:#b89a1f!important;color:#ffd700!important}
+body.light-mode .c2 button.num{background:rgba(254,249,195,.9)!important;border-color:#facc15!important;color:#854d0e!important}
+.c2 .rem{background:#2a2200;color:#c89b20}
+body.light-mode .c2 .rem{background:#fef08a;color:#713f12}
+.c1 button.num{background:rgba(58,21,21,.9)!important;border-color:#e63b3b!important;color:#fff!important}
+body.light-mode .c1 button.num{background:rgba(254,226,226,.9)!important;border-color:#f87171!important;color:#b91c1c!important}
+.c1 .rem{background:#e63b3b;color:#fff}
+body.light-mode .c1 .rem{background:#fca5a5;color:#7f1d1d}
+.c0 button.num{opacity:.28}
+body.light-mode .c0 button.num{opacity:.35;background:rgba(203,213,225,.9)!important;color:#64748b!important}
+.c0 .rem{background:rgba(37,10,10,.85);color:#8a3b3b;border:1px solid #4a1515}
+body.light-mode .c0 .rem{background:#94a3b8;color:#f1f5f9;border:none}
+.focus-active .cell.c0{display:none!important}
+button.num.coaa-line::after{
+  content:"";
+  position:absolute;
+  top:50%;
+  left:8%;
+  right:8%;
+  height:0.4vh;
+  background:#ffd700;
+  border-radius:2px;
+  box-shadow:0 0 8px rgba(255,215,0,.9);
+  transform:translateY(-50%);
+  pointer-events:none;
+  z-index:5;
+}
+body.light-mode button.num.coaa-line::after{
+  background:#d4a017;
+  box-shadow:0 0 8px rgba(212,160,23,.8);
+}
+button.num.capture-flash{animation:captureFlash .5s ease-out}
+@keyframes captureFlash{
+0%{box-shadow:0 0 0 0 rgba(0,191,165,.9);background:rgba(13,148,136,.9);transform:scale(1.05)}
+100%{box-shadow:0 0 0 18px rgba(0,191,165,0);background:var(--btn-bg);transform:scale(1)}
+}
+body.light-mode button.num.capture-flash{animation:captureFlashLight .5s ease-out}
+@keyframes captureFlashLight{
+0%{box-shadow:0 0 0 0 rgba(13,148,136,.9);background:rgba(13,148,136,.9);color:#fff;transform:scale(1.05)}
+100%{box-shadow:0 0 0 18px rgba(13,148,136,0);background:rgba(255,255,255,.9);transform:scale(1)}
+}
+.mode-indicator{position:fixed;top:8vh;left:50%;transform:translateX(-50%);background:#0d9488;color:#fff;padding:0.8vh 3vw;border-radius:20px;font-size:1.6vh;font-weight:900;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,.3);pointer-events:none;display:none}
+.mode-indicator.active{display:block}
+.mode-indicator.hand{background:#7c3aed}
+body.light-mode .mode-indicator{background:#0f766e}
+body.light-mode .mode-indicator.hand{background:#6d28d9}
+.total-counter-cell{background:var(--total-cell-bg)!important;border:1px solid var(--total-cell-border)!important;border-radius:8px;display:flex;align-items:center;justify-content:center;position:relative;width:100%;height:100%}
+.progress-ring{position:absolute;width:100%;height:100%;transform:rotate(-90deg)}
+.progress-ring__circle{transition:stroke-dashoffset .35s;transform-origin:50% 50%}
+.total-value{font-size:3.5vh;font-weight:900;color:var(--text-main);z-index:2}
+.empty-slot-cell{background:var(--empty-cell-bg)!important;border:1px dashed var(--empty-cell-border)!important;border-radius:8px;width:100%;height:100%}
+.footer{height:5vh;min-height:34px;display:flex;gap:1vw}
+.action{font-size:2vh;display:flex;align-items:center;justify-content:center;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,.05);cursor:pointer}
+.undo{flex:3;background:var(--footer-undo)!important;color:var(--text-main)!important;border:1px solid var(--btn-border);font-weight:bold;letter-spacing:.5px}
+.reset{flex:1;background:var(--footer-reset-bg)!important;color:var(--footer-reset-color)!important}
+@keyframes screenFlash{0%{filter:brightness(1)}30%{filter:brightness(1.8) hue-rotate(90deg)}60%{filter:brightness(.7)}100%{filter:brightness(1)}}
+.flash-effect{animation:screenFlash .6s ease-in-out}
+@keyframes zeroWhiteFlash{0%{background-color:rgba(255,255,255,0)}30%{background-color:rgba(255,255,255,.95)}70%{background-color:rgba(255,255,255,.95)}100%{background-color:rgba(255,255,255,0)}}
+.zero-flash-overlay{position:absolute;top:0;left:0;width:100%;height:100%;z-index:99;pointer-events:none;display:flex;align-items:center;justify-content:center;animation:zeroWhiteFlash 1.2s ease-in-out forwards}
+.zero-text-popup{font-size:3.5vh;font-weight:900;color:#111;background:#fff;padding:1.5vh 4vw;border-radius:12px;box-shadow:0 8px 25px rgba(0,0,0,.3);letter-spacing:1px}
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);display:none;justify-content:center;align-items:center;z-index:100000;padding:15px}
+.modal-content{background:var(--info-bg);color:var(--text-main);width:100%;max-width:320px;border-radius:10px;border:1px solid var(--btn-border);display:flex;flex-direction:column;padding:14px;gap:8px;text-align:center;max-height:90vh;overflow-y:auto}
+.mind-card{font-size:3vh;font-weight:900;color:#ff66b2;background:rgba(51,17,34,.9);border:1px solid #993366;padding:0.8vh;border-radius:6px;margin:2px 0}
+body.light-mode .mind-card{color:#db2777;background:rgba(253,242,248,.9);border-color:#f472b6}
+.brain-btn{background:#0d9488;color:#fff;border:none;padding:1.8vh;border-radius:8px;font-size:1.8vh;font-weight:900;cursor:pointer}
+.brain-btn.hand{background:#7c3aed}
+.brain-btn.analyze{background:rgba(51,17,34,.9);color:#ff66b2;border:1px solid #993366;padding:1.5vh;font-size:1.6vh;margin-top:4px}
+.brain-btn.exit{background:rgba(58,21,21,.9);color:#ff8080;border:1px solid #e63b3b;padding:1vh;font-size:1.5vh}
+.analysis-row{display:flex;justify-content:space-between;align-items:center;background:var(--btn-bg);border:1px solid var(--btn-border);border-radius:6px;padding:1vh 2vw;margin:4px 0}
+.analysis-row.best{background:rgba(13,148,136,.9);border-color:#00bfa5;color:#fff}
+.analysis-row.danger{background:rgba(58,21,21,.9);border-color:#e63b3b;color:#fff}
+.analysis-num{font-size:2.5vh;font-weight:900}
+.analysis-prob{font-size:1.8vh;font-weight:900}
+.analysis-reason{font-size:1.2vh;color:var(--info-text);margin-top:2px;text-align:right}
+.analysis-row.best .analysis-reason{color:#ccfbf1}
+.analysis-row.danger .analysis-reason{color:#ffcccc}
+.badge-row{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:6px 0}
+.badge{background:var(--btn-bg);border:1px solid var(--btn-border);border-radius:6px;padding:0.5vh 2vw;font-size:1.3vh;font-weight:900}
+.badge.floor{background:rgba(13,148,136,.9);color:#fff;border-color:#00bfa5}
+.badge.hand{background:rgba(124,58,237,.9);color:#fff;border-color:#a78bfa}
+  </style>
+ </head>
+ <body>
+  <div class="app" id="appContainer">
+   <div class="header">
+    <div class="btn-group">
+     <button class="top-action-btn ai-mind-btn" id="openBotMind" title="العقل الذكي">🧠</button>
+     <button class="top-action-btn focus-btn" id="focusToggle" title="التركيز">👁️</button>
+     <button class="top-action-btn theme-btn" id="themeToggle" title="السيم">☀️</button>
+    </div>
+   </div>
+   <div class="opacity-panel" id="opacityPanel">
+     <label>🔆 الشفافية:</label>
+     <input type="range" min="0" max="100" value="100" id="opacitySlider">
+     <span class="value" id="opacityValue">100%</span>
+   </div>
+   <div class="dropped-bar" id="droppedBar" title="اضغط للتحكم في الشفافية">
+    <span class="pin-icon">📌</span> <span id="droppedList" style="display:flex;gap:6px;align-items:center;">لا توجد</span>
+   </div>
+   <div id="grid" class="grid"></div>
+   <div class="footer">
+    <button class="action undo" id="undo">↩ تراجع</button>
+    <button class="action reset" id="reset">🔄</button>
+   </div>
+  </div>
+  <div class="mode-indicator" id="modeIndicator"></div>
+  <div class="modal" id="botModal">
+   <div class="modal-content" id="botModalContent"></div>
+  </div>
+  <script>
+/* ⚡ الشفافية */
+const opacityPanel = document.getElementById('opacityPanel');
+const opacitySlider = document.getElementById('opacitySlider');
+const opacityValue = document.getElementById('opacityValue');
+const droppedBar = document.getElementById('droppedBar');
+let savedOpacity = parseInt(localStorage.getItem('ronda_opacity')) || 100;
+opacitySlider.value = savedOpacity;
+opacityValue.textContent = savedOpacity + '%';
+function applyOpacity(value){
+  const app = document.getElementById('appContainer');
+  if(app) app.style.opacity = value / 100;
+  document.documentElement.style.background = 'transparent';
+  document.body.style.background = 'transparent';
+  localStorage.setItem('ronda_opacity', value);
+}
+applyOpacity(savedOpacity);
+opacitySlider.addEventListener('input', (e) => {
+  const value = e.target.value;
+  opacityValue.textContent = value + '%';
+  applyOpacity(value);
+});
+droppedBar.onclick = () => {
+  opacityPanel.classList.toggle('active');
+  playSound('click'); vibrate(20);
+};
+
+/* المنطق الأساسي */
+const gridLayout = [1, 2, 3, 4, 5, 6, 7, 10, 11, 12, 'empty', 'total'];
+const allNums = [1, 2, 3, 4, 5, 6, 7, 10, 11, 12];
+const SEQUENCE = [1, 2, 3, 4, 5, 6, 7, 10, 11, 12];
+let left = JSON.parse(localStorage.getItem('ronda_left_radar')) || Object.fromEntries(allNums.map(n => [n, 4]));
+allNums.forEach(n => { if(left[n] === undefined) left[n] = 4; });
+let history = JSON.parse(localStorage.getItem('ronda_history_radar')) || [];
+let focusMode = JSON.parse(localStorage.getItem('ronda_focus_mode')) || false;
+let isLightMode = JSON.parse(localStorage.getItem('ronda_light_mode')) || false;
+let captureMode = null;
+let floorCards = [];
+let handCards = [];
+let savedBrain = JSON.parse(localStorage.getItem('ronda_brain_data')) || { floorCards: [], handCards: [] };
+floorCards = savedBrain.floorCards || [];
+handCards = savedBrain.handCards || [];
+const appContainer = document.getElementById('appContainer');
+const focusToggleBtn = document.getElementById('focusToggle');
+const themeToggleBtn = document.getElementById('themeToggle');
+const grid = document.getElementById('grid');
+const botModal = document.getElementById('botModal');
+const botModalContent = document.getElementById('botModalContent');
+const droppedList = document.getElementById('droppedList');
+const modeIndicator = document.getElementById('modeIndicator');
+const openBotMindBtn = document.getElementById('openBotMind');
+if(focusMode){ appContainer.classList.add('focus-active'); focusToggleBtn.classList.add('active'); }
+if(isLightMode){ document.body.classList.add('light-mode'); themeToggleBtn.textContent = '🌙'; }
+focusToggleBtn.onclick = () => {
+  focusMode = !focusMode;
+  localStorage.setItem('ronda_focus_mode', JSON.stringify(focusMode));
+  if(focusMode){ appContainer.classList.add('focus-active'); focusToggleBtn.classList.add('active'); }
+  else { appContainer.classList.remove('focus-active'); focusToggleBtn.classList.remove('active'); }
+  playSound('click'); vibrate(20);
+};
+themeToggleBtn.onclick = () => {
+  isLightMode = !isLightMode;
+  localStorage.setItem('ronda_light_mode', JSON.stringify(isLightMode));
+  if(isLightMode){ document.body.classList.add('light-mode'); themeToggleBtn.textContent = '🌙'; }
+  else { document.body.classList.remove('light-mode'); themeToggleBtn.textContent = '☀️'; }
+  playSound('click'); vibrate(20);
+};
+let audioCtx = null;
+function initAudioContext(){
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+  }catch(e){}
+}
+function playSound(type){
+  try{
+    initAudioContext();
+    if(!audioCtx) return;
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    if(type === 'click'){
+      gain.gain.setValueAtTime(0.4, now);
+      osc.frequency.setValueAtTime(550, now);
+      osc.frequency.exponentialRampToValueAtTime(100, now + 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+      osc.start(now); osc.stop(now + 0.08);
+    } else if(type === 'depleted'){
+      osc.type = 'sawtooth';
+      gain.gain.setValueAtTime(0.3, now);
+      osc.frequency.setValueAtTime(300, now);
+      osc.frequency.linearRampToValueAtTime(120, now + 0.3);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      osc.start(now); osc.stop(now + 0.35);
+    } else if(type === 'milestone'){
+      gain.gain.setValueAtTime(0.5, now);
+      osc.frequency.setValueAtTime(400, now);
+      osc.frequency.exponentialRampToValueAtTime(800, now + 0.3);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+      osc.start(now); osc.stop(now + 0.3);
+    } else if(type === 'capture'){
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0.3, now);
+      osc.frequency.setValueAtTime(800, now);
+      osc.frequency.exponentialRampToValueAtTime(1400, now + 0.1);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+      osc.start(now); osc.stop(now + 0.12);
+    } else if(type === 'switch'){
+      osc.type = 'triangle';
+      gain.gain.setValueAtTime(0.3, now);
+      osc.frequency.setValueAtTime(600, now);
+      osc.frequency.exponentialRampToValueAtTime(900, now + 0.1);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+      osc.start(now); osc.stop(now + 0.12);
+    }
+  }catch(e){}
+}
+function saveData(){
+  localStorage.setItem('ronda_left_radar', JSON.stringify(left));
+  localStorage.setItem('ronda_history_radar', JSON.stringify(history));
+  localStorage.setItem('ronda_brain_data', JSON.stringify({floorCards, handCards}));
+}
+function vibrate(pattern){
+  try{ if("vibrate" in navigator) navigator.vibrate(pattern); }catch(e){}
+}
+function triggerScreenFlash(){
+  appContainer.classList.remove('flash-effect');
+  void appContainer.offsetWidth;
+  appContainer.classList.add('flash-effect');
+}
+function triggerZeroFlashEffect(){
+  const overlay = document.createElement('div');
+  overlay.className = 'zero-flash-overlay';
+  overlay.innerHTML = `<div class="zero-text-popup">سالات التفرقة</div>`;
+  appContainer.appendChild(overlay);
+  setTimeout(() => overlay.remove(), 1200);
+}
+function showModeIndicator(text, type){
+  modeIndicator.textContent = text;
+  modeIndicator.className = 'mode-indicator active' + (type === 'hand' ? ' hand' : '');
+}
+function hideModeIndicator(){ modeIndicator.classList.remove('active'); }
+let autoOffTimer = null;
+function resetAutoOff(){
+  if(autoOffTimer) clearTimeout(autoOffTimer);
+  autoOffTimer = setTimeout(() => {
+    if(captureMode){
+      captureMode = null;
+      updateBotMindBtn();
+      hideModeIndicator();
+      playSound('click');
+      vibrate(30);
+    }
+  }, 3000);
+}
+function updateBotMindBtn(){
+  openBotMindBtn.classList.remove('mode-floor', 'mode-hand');
+  if(captureMode === 'floor'){
+    openBotMindBtn.classList.add('mode-floor');
+    openBotMindBtn.textContent = '🎴';
+  } else if(captureMode === 'hand'){
+    openBotMindBtn.classList.add('mode-hand');
+    openBotMindBtn.textContent = '✋';
+  } else {
+    openBotMindBtn.textContent = '🧠';
+  }
+}
+function render(){
+  grid.innerHTML = '';
+  const remaining = Object.values(left).reduce((a,b)=>a+b,0);
+  if(history.length === 0){
+    droppedList.innerHTML = `<span style="color:var(--info-text)">لا توجد أوراق بعد</span>`;
+  } else {
+    droppedList.innerHTML = '';
+    const lastFour = history.slice(-4);
+    lastFour.forEach((item, index) => {
+      const chip = document.createElement('span');
+      chip.className = 'dropped-chip';
+      chip.textContent = `#${item.num}`;
+      if(index === lastFour.length - 1) chip.classList.add('latest-dropped');
+      droppedList.appendChild(chip);
+    });
+  }
+  gridLayout.forEach(item => {
+    if(item === 'total'){
+      const cell = document.createElement('div');
+      cell.className = 'cell total-slot';
+      const maxCards = 40;
+      const radius = 28;
+      const circumference = 2 * Math.PI * radius;
+      const strokeDashoffset = circumference - (remaining / maxCards) * circumference;
+      const ringColor = isLightMode ? '#d4a017' : '#ffd700';
+      const ringBg = isLightMode ? '#cbd5e1' : '#222';
+      cell.innerHTML = `
+        <div class="total-counter-cell">
+          <svg class="progress-ring" viewBox="0 0 70 70">
+            <circle cx="35" cy="35" r="${radius}" stroke="${ringBg}" stroke-width="4" fill="transparent"/>
+            <circle class="progress-ring__circle" cx="35" cy="35" r="${radius}" stroke="${ringColor}" stroke-width="4" fill="transparent"
+              stroke-dasharray="${circumference}" stroke-dashoffset="${strokeDashoffset}" stroke-linecap="round"/>
+          </svg>
+          <span class="total-value">${remaining}</span>
+        </div>`;
+      grid.appendChild(cell);
+    } else if(item === 'empty'){
+      const cell = document.createElement('div');
+      cell.className = 'cell empty-slot';
+      cell.innerHTML = `<div class="empty-slot-cell"></div>`;
+      grid.appendChild(cell);
+    } else {
+      const n = item;
+      const cell = document.createElement('div');
+      cell.className = 'cell c' + left[n];
+      const btn = document.createElement('button');
+      btn.className = 'num';
+      btn.textContent = n;
+      btn.disabled = left[n] === 0 && !captureMode;
+      if(left[n] === 1) btn.classList.add('danger-pulse');
+      else btn.classList.remove('danger-pulse');
+      const rem = document.createElement('span');
+      rem.className = 'rem';
+      rem.textContent = left[n];
+      btn.onclick = (e) => {
+        e.preventDefault(); e.stopPropagation();
+        initAudioContext();
+        if(captureMode){ handleCapture(n); resetAutoOff(); }
+        else { handleNormalTap(n); }
+      };
+      cell.append(btn, rem);
+      grid.appendChild(cell);
+    }
+  });
+}
+function handleNormalTap(n){
+  if(left[n] > 0){
+    const willBeDepleted = (left[n] === 1);
+    left[n]--;
+    history.push({num: n, time: new Date().toLocaleTimeString('ar-MA', {hour: '2-digit', minute:'2-digit', second:'2-digit'})});
+    saveData();
+    const newRemaining = Object.values(left).reduce((a,b)=>a+b,0);
+    if(newRemaining === 0){ playSound('milestone'); vibrate([150,100,150,100,300]); triggerZeroFlashEffect(); }
+    else if(newRemaining === 40 || newRemaining === 24 || newRemaining === 12){ playSound('milestone'); vibrate([100,50,100,50,200]); triggerScreenFlash(); }
+    else if(willBeDepleted){ playSound('depleted'); vibrate([80,50,80]); }
+    else { playSound('click'); vibrate(20); }
+    render();
+  }
+}
+function handleCapture(n){
+  if(captureMode === 'floor'){ floorCards.push(n); playSound('capture'); vibrate([20,20,20]); showModeIndicator(`🎴 الطاولة: ${n} (${floorCards.length})`, 'floor'); }
+  else if(captureMode === 'hand'){ handCards.push(n); playSound('capture'); vibrate([20,20,20]); showModeIndicator(`✋ اليد: ${n} (${handCards.length}/3)`, 'hand'); }
+  const cells = grid.querySelectorAll('.cell');
+  cells.forEach(cell => {
+    const btn = cell.querySelector('button.num');
+    if(btn && parseInt(btn.textContent) === n){
+      btn.classList.remove('capture-flash');
+      void btn.offsetWidth;
+      btn.classList.add('capture-flash');
+    }
+  });
+  saveData();
+}
+openBotMindBtn.onclick = () => {
+  initAudioContext();
+  playSound('switch'); vibrate(20);
+  if(captureMode === null){ captureMode = 'floor'; showModeIndicator('🎴 وضع الطاولة — نقرة على الأرقام', 'floor'); resetAutoOff(); }
+  else if(captureMode === 'floor'){ captureMode = 'hand'; showModeIndicator('✋ وضع اليد — نقرة على 3 أوراق', 'hand'); resetAutoOff(); }
+  else if(captureMode === 'hand'){ captureMode = null; hideModeIndicator(); if(handCards.length > 0){ showAnalysis(); botModal.style.display = 'flex'; } }
+  updateBotMindBtn(); render();
+};
+document.getElementById('undo').onclick = () => {
+  initAudioContext();
+  const entry = history.pop();
+  if(entry !== undefined){ left[entry.num]++; saveData(); playSound('click'); vibrate(20); render(); }
+};
+document.getElementById('reset').onclick = () => {
+  initAudioContext();
+  left = Object.fromEntries(allNums.map(n => [n, 4]));
+  history = []; floorCards = []; handCards = []; captureMode = null;
+  if(autoOffTimer) clearTimeout(autoOffTimer);
+  localStorage.removeItem('ronda_left_radar'); localStorage.removeItem('ronda_history_radar'); localStorage.removeItem('ronda_brain_data');
+  playSound('milestone'); vibrate(40); triggerScreenFlash();
+  updateBotMindBtn(); hideModeIndicator(); render();
+};
+botModal.onclick = (e) => { if(e.target === botModal){ botModal.style.display = 'none'; playSound('click'); } };
+function showAnalysis(){
+  if(handCards.length === 0){
+    botModalContent.innerHTML = `<div style="font-size:13px;color:#ff8080;font-weight:bold;">⚠️ ما سجلتيش الأوراق ديال اليد!</div><button id="backBtn" class="brain-btn">↩ رجوع</button>`;
+    document.getElementById('backBtn').onclick = () => { botModal.style.display = 'none'; captureMode = null; updateBotMindBtn(); hideModeIndicator(); render(); };
+    botModal.style.display = 'flex'; return;
+  }
+  function countInArray(arr, n){ return arr.filter(x => x === n).length; }
+  const uniqueHand = [...new Set(handCards)];
+  const results = [];
+  uniqueHand.forEach(cardNum => {
+    const myCopies = countInArray(handCards, cardNum);
+    const floorCopies = countInArray(floorCards, cardNum);
+    const deckCopies = left[cardNum] || 0;
+    const knownCopies = myCopies + floorCopies + deckCopies;
+    const oppCopies = Math.max(0, 4 - knownCopies);
+    const isOnFloor = floorCopies > 0;
+    const idx = SEQUENCE.indexOf(cardNum);
+    let smallerExists = false, smallerReason = '';
+    for(let i = 0; i < idx; i++){
+      const smallerNum = SEQUENCE[i];
+      const sInDeck = left[smallerNum] || 0, sInFloor = countInArray(floorCards, smallerNum), sInHand = countInArray(handCards, smallerNum);
+      const sKnown = sInDeck + sInFloor + sInHand, sOpp = Math.max(0, 4 - sKnown);
+      if(sInDeck > 0 || sOpp > 0){ smallerExists = true; smallerReason = `الرقم ${smallerNum} باقي`; break; }
+    }
+    let probability = 0, reason = '', status = 'normal';
+    if(!isOnFloor){ if(oppCopies > 0){ probability = 30; reason = `ما كايناش فالطاولة، ولكن ممكن عند خصم`; } else { probability = 0; reason = `ما كايناش فالطاولة وما كايناش عند الخصوم`; } }
+    else {
+      if(smallerExists){ probability = 40; reason = `كاينة فالطاولة، ولكن ${smallerReason}`; }
+      else {
+        if(cardNum === 12){ probability = 95; reason = `مضمونة تقريباً — 12 كتربح +5`; status = 'best'; }
+        else if(cardNum === 1){ probability = 95; reason = `مضمونة — 1 كتربح الخصم +5 ⚠️`; status = 'danger'; }
+        else { probability = 90; reason = `مضمونة — ما كاينش رقم أصغر`; status = 'best'; }
+      }
+    }
+    results.push({num: cardNum, probability, reason, status});
+  });
+  results.sort((a, b) => b.probability - a.probability);
+  const best = results[0];
+  let html = `<div style="font-size:12px;color:var(--info-text);font-weight:bold;">🔍 تحليل الأوراق:</div>`;
+  if(best && best.probability >= 60){ html += `<div class="mind-card" style="background:#0d9488;color:#fff;border-color:#00bfa5;">🎯 جيب القاعة بـ: ${best.num}</div><div style="font-size:10px;color:var(--info-text);">${best.reason}</div>`; }
+  else if(best && best.probability > 0){ html += `<div class="mind-card" style="background:#7c3aed;color:#fff;border-color:#a78bfa;">⚠️ أفضل خيار: ${best.num} (${best.probability}%)</div>`; }
+  else { html += `<div class="mind-card" style="background:#3a1515;color:#ff8080;border-color:#e63b3b;">❌ ما كايناش قاعة</div>`; }
+  results.forEach(r => {
+    const cls = (r === best && r.probability >= 60) ? 'best' : (r.status === 'danger' ? 'danger' : '');
+    html += `<div class="analysis-row ${cls}"><span class="analysis-num">${r.num}</span><div style="flex:1;text-align:right;padding-right:8px;"><span class="analysis-prob">${r.probability}%</span><div class="analysis-reason">${r.reason}</div></div></div>`;
+  });
+  html += `<button id="backBtn" class="brain-btn" style="margin-top:8px;">↩ رجوع</button>`;
+  botModalContent.innerHTML = html;
+  document.getElementById('backBtn').onclick = () => { botModal.style.display = 'none'; captureMode = null; updateBotMindBtn(); hideModeIndicator(); render(); };
+  botModal.style.display = 'flex';
+}
+render();
+updateBotMindBtn();
+</script>
+ </body>
+</html>
