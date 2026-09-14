@@ -1,0 +1,73 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Capacitor CLI
+        run: npm install -g @capacitor/cli
+
+      - name: Add Android platform
+        run: npx cap add android
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Copy transparent overrides
+        run: |
+          echo "📋 Copying override files..."
+          
+          # styles.xml
+          cp android-overrides/styles.xml android/app/src/main/res/values/styles.xml
+          echo "✅ styles.xml"
+          
+          # Java files
+          mkdir -p android/app/src/main/java/com/ronda/calcul
+          cp android-overrides/MainActivity.java android/app/src/main/java/com/ronda/calcul/MainActivity.java
+          echo "✅ MainActivity.java"
+          
+          cp android-overrides/OverlayService.java android/app/src/main/java/com/ronda/calcul/OverlayService.java
+          echo "✅ OverlayService.java"
+          
+          # Manifest
+          cp android-overrides/AndroidManifest.xml android/app/src/main/AndroidManifest.xml
+          echo "✅ AndroidManifest.xml"
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x android/gradlew
+
+      - name: Build APK (Debug)
+        run: |
+          cd android
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Ronda-Native-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
